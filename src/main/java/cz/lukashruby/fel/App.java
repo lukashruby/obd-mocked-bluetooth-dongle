@@ -1,5 +1,8 @@
 package cz.lukashruby.fel;
 
+import cz.blahami2.cardashboardadapter.SpeedRpmStruct;
+import cz.blahami2.cardashboardadapter.StructReader;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,6 +10,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,6 +61,17 @@ public class App {
         return true;
     }
 
+    static StructReader structReader;
+
+    private void connectToSimulator(String[] args) throws SocketException, UnknownHostException {
+        String address = null;
+        if (args.length > 1) {
+            address = args[1];
+        }
+        int port = Integer.parseInt(args[0]);
+        structReader = new StructReader(port, address);
+    }
+
     private void startServer() throws Exception {
 
         //Create a UUID for SPP
@@ -80,26 +96,28 @@ public class App {
         String lineRead = null;
         OutputStream outStream = connection.openOutputStream();
 
+
         responces.clear();
 
         responces.put("ATD", () -> "OK");
-        responces.put("ATZ",  () -> "ELM327 v1.3a OBD GPSLogger");
-        responces.put("ATE0",  () -> "OK");
-        responces.put("ATM0",  () -> "?");
-        responces.put("ATL0",  () -> "OK");
-        responces.put("ATS0",  () -> "OK");
-        responces.put("ATH0",  () -> "OK");
-        responces.put("AT AT1",  () -> "OK");
-        responces.put("AT STFE", () ->  "OK");
-        responces.put("ATSP0", () ->  "OK");
-        responces.put("0100",  () -> "410000180000FB");
-        responces.put("010c",  () -> "410C" + parseRpm(sRpm+=15 ));
-        responces.put("010d", () -> "410D" + parseSpeed(sSpeed+=0.5));
+        responces.put("ATZ", () -> "ELM327 v1.3a OBD GPSLogger");
+        responces.put("ATE0", () -> "OK");
+        responces.put("ATM0", () -> "?");
+        responces.put("ATL0", () -> "OK");
+        responces.put("ATS0", () -> "OK");
+        responces.put("ATH0", () -> "OK");
+        responces.put("AT AT1", () -> "OK");
+        responces.put("AT STFE", () -> "OK");
+        responces.put("ATSP0", () -> "OK");
+        responces.put("0100", () -> "410000180000FB");
+
 
         Scanner scanner = new Scanner(System.in);
         while ((lineRead = bReader.readLine()) != null) {
             System.out.println(lineRead);
-
+            final SpeedRpmStruct speedRpmStruct = structReader.read();
+            responces.put("010c", () -> "410C" + parseRpm(speedRpmStruct.speed));
+            responces.put("010d", () -> "410D" + parseSpeed(speedRpmStruct.rpm));
 
             if (lineRead.contains("ATL0")) {
                 lineFeed = false;
@@ -107,6 +125,7 @@ public class App {
             if (lineRead.contains("ATE0")) {
                 echo = false;
             }
+
 
             Map.Entry<String, CommandResponse> r = get(responces, lineRead);
 
@@ -154,6 +173,7 @@ public class App {
         System.out.println("Name: " + localDevice.getFriendlyName());
 
         App sampleSPPServer = new App();
+        sampleSPPServer.connectToSimulator(args);
         sampleSPPServer.startServer();
 
     }
