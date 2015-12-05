@@ -10,8 +10,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="bluecove-2.1.1-SNAPSHOT" level="application" />
     <orderEntry type="library" scope="TEST" name="Maven: junit:junit:3.8.1" level="project" />
-    <orderEntry type="library" name="Maven: net.sf.bluecove:bluecove:2.1.0" level="project" />
-    <orderEntry type="library" name="Maven: net.sf.bluecove:bluecove-gpl:2.1.0" level="project" />
+    <orderEntry type="library" name="Maven: net.sf.bluecove:bluecove:2.1.1" level="project" />
   </component>
 </module>

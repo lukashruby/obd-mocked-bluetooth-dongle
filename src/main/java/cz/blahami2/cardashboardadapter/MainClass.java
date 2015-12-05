@@ -16,6 +16,8 @@ public class MainClass {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        String[] args1 = {"5500"};
+        args = args1;
         try {
             String address = null;
             if (args.length > 1) {

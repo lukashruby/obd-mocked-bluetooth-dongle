@@ -10,7 +10,15 @@ public class SpeedRpmStruct {
     public final float rpm;
 
     public SpeedRpmStruct( float speed, float rpm ) {
-        this.speed = speed;
+        this.speed = speed * 4;
         this.rpm = rpm;
+    }
+
+    @Override
+    public String toString() {
+        return "SpeedRpmStruct{" +
+                "speed=" + speed +
+                ", rpm=" + rpm +
+                '}';
     }
 }

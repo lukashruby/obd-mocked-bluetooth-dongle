@@ -3,21 +3,24 @@ package cz.lukashruby.fel;
 import cz.blahami2.cardashboardadapter.SpeedRpmStruct;
 import cz.blahami2.cardashboardadapter.StructReader;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import javax.bluetooth.LocalDevice;
+import javax.bluetooth.RemoteDevice;
+import javax.bluetooth.UUID;
+import javax.microedition.io.Connector;
+import javax.microedition.io.StreamConnection;
+import javax.microedition.io.StreamConnectionNotifier;
+import java.io.*;
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;
 
-import javax.bluetooth.*;
-import javax.microedition.io.*;
-
-public class App {
+/**
+ * Class that implements an SPP Server which accepts single line of
+ * message from an SPP client and sends a single line of response to the client.
+ */
+public class AppLocal {
 
     interface CommandResponse {
         String get();
@@ -30,6 +33,7 @@ public class App {
     private SpeedRpmStruct speedRpmStruct;
 
 
+    //start server
 
     private boolean sendResponse(OutputStream os, String command, String message) throws IOException {
         if (echo) {
@@ -51,18 +55,6 @@ public class App {
         return true;
     }
 
-    static Thread structReaderThread;
-
-    private void connectToSimulator(String[] args) throws SocketException, UnknownHostException {
-        String address = null;
-        if (args.length > 1) {
-            address = args[1];
-        }
-        int port = Integer.parseInt(args[0]);
-        structReaderThread = new Thread(new StructReaderRunnable(this, port));
-        structReaderThread.setDaemon(true);
-        structReaderThread.start();
-    }
 
     private void startServer() throws Exception {
 
@@ -108,8 +100,8 @@ public class App {
         while ((lineRead = bReader.readLine()) != null) {
             System.out.println(lineRead);
             System.out.println(speedRpmStruct);
-            responces.put("010c", () -> "410C" + parseRpm(speedRpmStruct.rpm));
-            responces.put("010d", () -> "410D" + parseSpeed(speedRpmStruct.speed));
+            responces.put("01 0C", () -> "" + parseRpm(speedRpmStruct.rpm));
+            responces.put("01 0D", () -> "" + parseSpeed(speedRpmStruct.speed));
 
             if (lineRead.contains("ATL0")) {
                 lineFeed = false;
@@ -128,6 +120,8 @@ public class App {
             }
 
             outStream.flush();
+
+            speedRpmStruct = new SpeedRpmStruct(speedRpmStruct.speed+4f, speedRpmStruct.rpm+5f);
             Thread.sleep(100);
 
 
@@ -138,11 +132,11 @@ public class App {
 
     }
 
-    synchronized public void setSpeedRpmStruct(SpeedRpmStruct speedRpmStruct){
+    synchronized public void setSpeedRpmStruct(SpeedRpmStruct speedRpmStruct) {
         this.speedRpmStruct = speedRpmStruct;
     }
 
-    synchronized public SpeedRpmStruct getSpeedRpmStruct(){
+    synchronized public SpeedRpmStruct getSpeedRpmStruct() {
         return speedRpmStruct;
     }
 
@@ -153,7 +147,7 @@ public class App {
 
     private String parseRpm(float rpm) {
         rpm *= 4;
-        return String.format("%02X%02X", ((int) rpm) >> 8, ((int) rpm) & 0xFF);
+        return String.format("%02X %02X", ((int) rpm) >> 8, ((int) rpm) & 0xFF);
     }
 
 
@@ -174,31 +168,15 @@ public class App {
         System.out.println("Address: " + localDevice.getBluetoothAddress());
         System.out.println("Name: " + localDevice.getFriendlyName());
 
-        App sampleSPPServer = new App();
-        sampleSPPServer.connectToSimulator(args);
+
+        AppLocal sampleSPPServer = new AppLocal();
+        SpeedRpmStruct speedRpmStruct = new SpeedRpmStruct(10, 100);
+        sampleSPPServer.setSpeedRpmStruct(speedRpmStruct);
         sampleSPPServer.startServer();
 
+
+
+
     }
 
-    static class StructReaderRunnable implements Runnable {
-
-        final StructReader structReader;
-        final App app;
-
-        public StructReaderRunnable(App app, int port) throws SocketException, UnknownHostException {
-            structReader = new StructReader(port, null);
-            this.app = app;
-        }
-
-        @Override
-        public void run() {
-            try {
-                while (true) {
-                    app.setSpeedRpmStruct(structReader.read());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

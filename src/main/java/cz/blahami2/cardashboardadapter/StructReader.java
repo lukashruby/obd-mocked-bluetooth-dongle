@@ -34,7 +34,7 @@ public class StructReader {
     }
 
     public SpeedRpmStruct read() throws IOException {
-        System.out.println("receiving packet");
+        //System.out.println("receiving packet");
         socket.receive(packet);
         byte[] data = packet.getData();
         ByteBuffer byteBuffer = ByteBuffer.wrap(data);
