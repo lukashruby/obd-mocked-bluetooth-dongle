@@ -17,7 +17,7 @@ import java.util.Scanner;
 import javax.bluetooth.*;
 import javax.microedition.io.*;
 
-public class App {
+public class AppCarDashboard {
 
     interface CommandResponse {
         String get();
@@ -58,7 +58,7 @@ public class App {
         if (args.length > 1) {
             address = args[1];
         }
-        int port = Integer.parseInt(args[0]);
+        int port = 5500;
         structReaderThread = new Thread(new StructReaderRunnable(this, port));
         structReaderThread.setDaemon(true);
         structReaderThread.start();
@@ -108,8 +108,8 @@ public class App {
         while ((lineRead = bReader.readLine()) != null) {
             System.out.println(lineRead);
             System.out.println(speedRpmStruct);
-            responces.put("010c", () -> "410C" + parseRpm(speedRpmStruct.rpm));
-            responces.put("010d", () -> "410D" + parseSpeed(speedRpmStruct.speed));
+            responces.put("01 0C", () -> "" + parseRpm(speedRpmStruct.rpm));
+            responces.put("01 0D", () -> "" + parseSpeed(speedRpmStruct.speed));
 
             if (lineRead.contains("ATL0")) {
                 lineFeed = false;
@@ -174,7 +174,7 @@ public class App {
         System.out.println("Address: " + localDevice.getBluetoothAddress());
         System.out.println("Name: " + localDevice.getFriendlyName());
 
-        App sampleSPPServer = new App();
+        AppCarDashboard sampleSPPServer = new AppCarDashboard();
         sampleSPPServer.connectToSimulator(args);
         sampleSPPServer.startServer();
 
@@ -183,9 +183,9 @@ public class App {
     static class StructReaderRunnable implements Runnable {
 
         final StructReader structReader;
-        final App app;
+        final AppCarDashboard app;
 
-        public StructReaderRunnable(App app, int port) throws SocketException, UnknownHostException {
+        public StructReaderRunnable(AppCarDashboard app, int port) throws SocketException, UnknownHostException {
             structReader = new StructReader(port, null);
             this.app = app;
         }

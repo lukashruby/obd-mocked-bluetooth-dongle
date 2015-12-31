@@ -57,7 +57,7 @@
             <manifest>
               <addClasspath>true</addClasspath>
               <classpathPrefix>lib/</classpathPrefix>
-              <mainClass>cz.lukashruby.fel.App</mainClass>
+              <mainClass>cz.lukashruby.fel.AppTorque</mainClass>
             </manifest>
           </archive>
           <descriptorRefs>
