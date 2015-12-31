@@ -30,7 +30,6 @@ public class AppCarDashboard {
     private SpeedRpmStruct speedRpmStruct;
 
 
-
     private boolean sendResponse(OutputStream os, String command, String message) throws IOException {
         if (echo) {
             os.write(command.getBytes());
@@ -105,6 +104,8 @@ public class AppCarDashboard {
 
 
         Scanner scanner = new Scanner(System.in);
+
+
         while ((lineRead = bReader.readLine()) != null) {
             System.out.println(lineRead);
             System.out.println(speedRpmStruct);
@@ -138,11 +139,11 @@ public class AppCarDashboard {
 
     }
 
-    synchronized public void setSpeedRpmStruct(SpeedRpmStruct speedRpmStruct){
+    synchronized public void setSpeedRpmStruct(SpeedRpmStruct speedRpmStruct) {
         this.speedRpmStruct = speedRpmStruct;
     }
 
-    synchronized public SpeedRpmStruct getSpeedRpmStruct(){
+    synchronized public SpeedRpmStruct getSpeedRpmStruct() {
         return speedRpmStruct;
     }
 
@@ -182,22 +183,20 @@ public class AppCarDashboard {
 
     static class StructReaderRunnable implements Runnable {
 
-        final StructReader structReader;
+
         final AppCarDashboard app;
 
         public StructReaderRunnable(AppCarDashboard app, int port) throws SocketException, UnknownHostException {
-            structReader = new StructReader(port, null);
+            
             this.app = app;
         }
 
         @Override
         public void run() {
-            try {
-                while (true) {
-                    app.setSpeedRpmStruct(structReader.read());
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
+            while (true) {
+                Float speed = (float) (Math.random() * 1000) % 200;
+                Float rpm = (float) (Math.random() * 10000) % 5000;
+                app.setSpeedRpmStruct(new SpeedRpmStruct(speed, rpm));
             }
         }
     }
